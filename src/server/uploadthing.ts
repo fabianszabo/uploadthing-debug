@@ -1,5 +1,3 @@
-import { getAuth } from "@clerk/nextjs/server";
-
 import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
 
 const f = createUploadthing();
@@ -10,14 +8,11 @@ export const ourFileRouter = {
   imageUploader: f({ image: { maxFileSize: "4MB" } })
     // Set permissions and file types for this FileRoute
     .middleware(({ req }) => {
-      // This code runs on your server before upload
-      const user = getAuth(req);
+      const { userId } = JSON.parse(req.body as string) as { userId: string };
 
-      // If you throw, the user will not be able to upload
-      if (!user) throw new Error("Unauthorized");
+      if (!userId) throw new Error("Unauthorized");
 
-      // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: user.userId };
+      return { userId };
     })
     .onUploadComplete(({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
